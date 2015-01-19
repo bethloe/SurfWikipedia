@@ -1,7 +1,9 @@
 
 (function(){
     var arffDataArray = [],
-        scriptURLroot = "http://localhost:8888/SurfWikipedia/file_manager_server/",
+        port = location.port || 80,
+        scriptURLroot = "http://localhost:" + port + "/SurfWikipedia/file_manager_server/",
+        //scriptURLroot = "http://localhost/SurfWikipedia/file_manager_server/",
         uploadedFiles = 0,
         selectedAttributes = [],
         arffManager, 
@@ -9,7 +11,12 @@
         currentFile = 0,
         newIdName;
 
-
+/*
+    console.log('port');
+    console.log(port);
+    console.log(typeof port);
+    console.log(scriptURLroot);
+  */
     /*********************************************************************************************************************************/
     //  CALLBACKS
     
@@ -304,4 +311,4 @@
     })();
 
 
-})();   
+})();

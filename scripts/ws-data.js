@@ -1,7 +1,5 @@
 function WSData(options, _settings){
 
-    console.log(options);
-    console.log(_settings);
     var self = this,
         default_settings = {
             id : '',

@@ -6,6 +6,7 @@
     <script src="../libs/jquery-1.10.2.js" type="application/javascript" charset="utf-8"></script>
     <script src="../libs/bootstrap-3.3.1/dist/js/bootstrap.min.js" type="application/javascript" charset="utf-8"></script>
     
+    <script src="../libs/jquery.form.js" type="application/javascript" charset="utf-8"></script>
     <script src="../libs/jquery.uploadfile.js" type="application/javascript" charset="utf-8"></script>
     <script src="../scripts/ws-data.js" type="application/javascript" charset="utf-8"></script>
     <script src="../scripts/file-processor.js" type="application/javascript" charset="utf-8"></script>

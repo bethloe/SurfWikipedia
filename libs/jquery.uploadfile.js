@@ -15,6 +15,8 @@
 
     $.fn.uploadFile = function (options) {
         // This is the easiest way to have default options.
+
+        console.log(options);
         var s = $.extend({
             // These are the defaults.
             url: "",
