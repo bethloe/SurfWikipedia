@@ -5,11 +5,9 @@
 
 // Dropdown arrow/caret
 .caret {
-    display: inline-block;
-    width: 0;
-    height: 0;
-    margin-left: 2px;
-    vertical-align: middle;
+    position: relative;
+    float: right;
+    top: 8px;
     border-top:   @caret-width-base solid;
     border-right: @caret-width-base solid transparent;
     border-left:  @caret-width-base solid transparent;
@@ -18,12 +16,25 @@
 // The dropdown wrapper (div)
 .dropdown {
     position: relative;
+    width: 100%;
+
 }
 
-// Prevent the focus on the dropdown toggle when closing dropdowns
-.dropdown-toggle:focus {
-    outline: 0;
+
+.dropdown-toggle {
+    display: block;
+    // min-width: 160px;
+    width: 100%;
+    text-align: left; 
+    &:extend(.text-left);
+
+    // Prevent the focus on the dropdown toggle when closing dropdowns
+    &:focus{
+        outline: 0;
+    }
 }
+
+
 
 // The dropdown menu (ul)
 .dropdown-menu {

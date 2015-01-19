@@ -5,12 +5,14 @@
         uploadedFiles = 0,
         selectedAttributes = [],
         arffManager, 
-        arffObj = new arffStructure(),
-        currentFile = 0;
+        wsData = new WSData(),
+        currentFile = 0,
+        newIdName;
 
 
     /*********************************************************************************************************************************/
-
+    //  CALLBACKS
+    
     // Upload plugin
     var uploadOnSuccess = function(files,data,xhr) {
         ++uploadedFiles;
@@ -29,7 +31,7 @@
         if(!Array.isArray(filesToDelete)){
             filesToDelete = [];
             arffDataArray.forEach(function(arff){
-                filesToDelete.push(arff.file);
+                filesToDelete.push(arff.fileName);
             });
 
             $('.ajax-file-upload-statusbar').remove();
@@ -71,8 +73,18 @@
             if(typeof attrJoinBy == 'undefined' || attrJoinBy == 'undefined')
                 areAllDropdownSet = false;
         });
-        if(areAllDropdownSet)
+        if(areAllDropdownSet){
             $('#button_group_merge').slideDown();
+            var commonAttrName = arffDataArray[0]['join-by'],
+                i=1;
+            while(i<arffDataArray.length && arffDataArray[i]['join-by'] == commonAttrName)
+                ++i;
+            
+            if(i < arffDataArray.length)
+                $('#new_name_section').slideDown();
+            else
+                $('#new_name_section').slideUp();
+        }
     };
     
     
@@ -91,6 +103,8 @@
 
     // Buttons 
     var btnContinueUploadClicked = function(){
+        
+        console.log(arffDataArray);
         $('#file_uploader_container').slideUp();
         $('#button_group_upload').hide();
         
@@ -100,11 +114,17 @@
             $('#file_merger_container').slideDown();
         }
         else{
-            arffObj.clone(arffDataArray[0]);
+            wsData = arffDataArray[0];
             $('#file_settings_container').slideDown();
             fillFileAttrSelectors();
-            buildMetricsTable();
+            buildMeasuresTable();
         }   
+    };
+    
+    
+    var goClicked = function(){
+            
+        
     };
     
     
@@ -116,30 +136,37 @@
             selectedAttributes.push(arff["join-by"]);
         });
         
-        arffObj.clone(arffDataArray[0]);
+        newIdName = $('#input_new_name').val();
+        wsData = arffDataArray[0];
         for(var i=1; i< arffDataArray.length; i++)
-            arffObj = arffManager.merge(arffObj, selectedAttributes[i-1], arffDataArray[i], selectedAttributes[i]);
+            wsData = arffManager.merge(wsData, selectedAttributes[i-1], arffDataArray[i], selectedAttributes[i], newIdName);
         
         fillFileAttrSelectors();
-        buildMetricsTable();
+        buildMeasuresTable();
     };
     
     
     var btnContinueSettings = function() {
-        setAttributesToVisualize();
+        prepareDataToVisualize();
     };
     
     
     // Select / Deselect all links
     
     var selectAllClicked = function(){
-        $('.metric-checkbox').prop('checked', true);
+        $('.measure-checkbox').prop('checked', true);
     };
     
     var deselectAllClicked = function(){
-        $('.metric-checkbox').prop('checked', false);
+        $('.measure-checkbox').prop('checked', false);
     };
 
+    
+    var submitData = function() {
+        // submit to vis_uex.php
+        $("input[name='post']").val(JSON.stringify(wsData));
+        $("#post_form").submit();
+    };
 
     /*********************************************************************************************************************************/
     //  pluggins' Settings & Options
@@ -183,80 +210,90 @@
         arffDataArray.forEach(function(arff, i){
             
             dropdownOptions.listItems = arff.getAttributesByType(['string', 'nominal']);
-            var row = $("<div class='row show-grid'></div>").appendTo($('#dropdown_container_join_by'));
+            var row = $("<div class='row margin-top-bottom show-grid'></div>").appendTo($('#dropdown_container_join_by'));
             var spanCol = $("<div class='col-md-3 col-md-offset-3 text-right label-col'></div>").appendTo(row);
-            $("<span>" + arff.file + "</span>").appendTo(spanCol);
+            $("<span>" + arff.fileName + "</span>").appendTo(spanCol);
 
             var ddCol = $("<div class='col-md-2'>").appendTo(row);
-            $("<div id='dd_join_by_" + arff.file + "'></div>").appendTo(ddCol).dropdown_custom(dropdownOptions);
+            $("<div id='dd_join_by_" + arff.fileName + "'></div>").appendTo(ddCol).dropdown_custom(dropdownOptions);
         });
     }
     
     
     function fillFileAttrSelectors(){
         
+        $('#dropdown_title').empty();
+        $('#dropdown_snippet').empty();
         $('#dropdown_actual_class').empty();
         $('#dropdown_inferred_class').empty();
-        $('#dropdown_text').empty();
         
-        var nominalAttr = arffObj.getAttributesByType('nominal');
-        var stringAttr = arffObj.getAttributesByType('string');
-        selectedAttributes.forEach(function(attr){
-            if(nominalAttr.indexOf(attr) > -1)
-                nominalAttr.splice(nominalAttr.indexOf(attr), 1);
-            if(stringAttr.indexOf(attr) > -1)
-                stringAttr.splice(stringAttr.indexOf(attr), 1);
-        });
-        
+        var nominalAttr = wsData.getAttributesByType('nominal');
+        var stringAttr = wsData.getAttributesByType('string');
         
         dropdownOptions.onChange = settingDropdownChanged;
+        dropdownOptions.listItems = $.merge($.merge([], stringAttr), nominalAttr);
+        $('#dropdown_title').dropdown_custom(dropdownOptions);
+        stringAttr.splice(stringAttr.indexOf(wsData.settings.id), 1);
+        dropdownOptions.listItems = stringAttr;
+        $('#dropdown_snippet').dropdown_custom(dropdownOptions);
         dropdownOptions.listItems = nominalAttr;
         $('#dropdown_actual_class').dropdown_custom(dropdownOptions);
         $('#dropdown_inferred_class').dropdown_custom(dropdownOptions);
-        dropdownOptions.listItems = stringAttr;
-        $('#dropdown_text').dropdown_custom(dropdownOptions);
+
     }
     
     
-    function buildMetricsTable() {
+    function buildMeasuresTable() {
         
-        var $tbody = $('#metrics_table tbody');
-        var numericAttr = arffObj.getAttributesByType('numeric');
+        var $tbody = $('#measures_table tbody');
+        var numericAttr = wsData.getAttributesByType('numeric');
         
         numericAttr.forEach(function(numAttr){
             var $row = $("<tr value='" + numAttr + "'></tr>").appendTo($tbody);
             $("<td>" + numAttr + "</td>").appendTo($row);
-            $("<td><input type='checkbox' id='cb_" + numAttr + "' class='metric-checkbox' "+
-              "value='" + numAttr + "' checked=''></div></td>").appendTo($row);
+            $("<td><input type='checkbox' id='cb_" + numAttr + "' class='measure-checkbox' "+
+              "value='" + numAttr + "' checked=''/></td>").appendTo($row);
         });
     }
     
     
-    function setAttributesToVisualize() {
     
-        arffObj['settings'] = { metrics: [] };
+    function prepareDataToVisualize() {
+        setAttributesSemantics();
+        wsData.computeMetrics();
+        wsData.createStructuredData();
+        
+        console.log('arff ready to visualize');
+        console.log(wsData);
+
+        // submit to vis_uex.php
+        $("input[name='post']").val(JSON.stringify(wsData));
+        //$("#post_form").submit();
+    }
+    
+    
+    function setAttributesSemantics() {
+    
         $('#file_settings_container .dropdown').each(function(i, dd){
             var label = $(dd).attr('label');
             var attr = $(dd).prop('value');
             
-            arffObj.settings[label] = attr;
+            wsData.settings[label] = attr;
         });
-        
-        $('.metric-checkbox').each(function(i, cb){
+    
+        $('.measure-checkbox').each(function(i, cb){
             if($(cb).prop('checked'))
-                arffObj.settings.metrics.push($(cb).attr('value'));
-        });
-        
-        console.log('arff ready to be visualized');
-        console.log(arffObj);
+                wsData.settings.measures.push($(cb).attr('value'));
+        });        
     }
+    
     
     
     /*********************************************************************************************************************************/
     // Ready function
 
     (function() {
-        arffManager = new arffProcessor(arffSettings);
+        arffManager = new fileProcessor(arffSettings);
         $("#mulitplefileuploader").uploadFile(uploadSettings);
         $('#btn_delete_all').click(deleteFilesCallback);
         $('#btn_continue_upload').click(btnContinueUploadClicked);
