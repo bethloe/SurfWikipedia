@@ -128,7 +128,7 @@ function fileProcessor(settings){
         console.log(arff1);
         var attrId = idAttrName || join_by1,
             newArff = {
-            file: arff1.fileName + ' + ' + arff2.fileName,
+            file: 'Merged -- ' + arff1.fileName + ' + ' + arff2.fileName,
             attributes: {},
             rawData: [],
         };
