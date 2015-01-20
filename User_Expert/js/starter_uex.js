@@ -22,8 +22,12 @@
     
     // Upload plugin
     var uploadOnSuccess = function(files,data,xhr) {
+        console.log("---- success uploading");
         ++uploadedFiles;
-        arffManager.processArffFile(files[0]);
+        setTimeout(function(){
+            arffManager.processArffFile(files[0]);
+        }, 100);
+
     };
 
 
@@ -31,6 +35,12 @@
         $("#button_group_upload").show();
     };
     
+    var uploadOnError = function(files, status, message) {
+        console.log("---- error uploading");
+        console.log(status);
+        console.log(message);
+    };
+
 
     var deleteFilesCallback = function(filesToDelete, pd){
 
@@ -196,6 +206,7 @@
         showDelete: true,
         showFileCounter: false,
         onSuccess: uploadOnSuccess,
+        onError: uploadOnError,
         deleteCallback: deleteFilesCallback,    //pd.statusbar.hide(); //You chose whether to hide or not.
         afterUploadAll: uploadAfterUploadAll
     };

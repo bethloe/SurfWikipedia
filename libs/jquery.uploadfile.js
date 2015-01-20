@@ -7,6 +7,7 @@
  */
 (function ($) {
     if ($.fn.ajaxForm == undefined) {
+        console.log("get script");
         $.getScript("http://malsup.github.io/jquery.form.js");
     }
     var feature = {};
@@ -15,8 +16,6 @@
 
     $.fn.uploadFile = function (options) {
         // This is the easiest way to have default options.
-
-        console.log(options);
         var s = $.extend({
             // These are the defaults.
             url: "",
@@ -465,6 +464,9 @@
 	                
                 },
                 success: function (data, message, xhr) {
+
+                    console.log(data);
+                    console.log(message);
                     obj.responses.push(data);
                     pd.progressbar.width('100%')
                     if(s.showProgress)

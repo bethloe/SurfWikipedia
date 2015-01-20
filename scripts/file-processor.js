@@ -15,7 +15,7 @@ function fileProcessor(settings){
         var arffFile = s.pathToUploads + fileName;
 
         $.get(arffFile, {})
-            .done(function(arff){
+            .success(function(arff){
                 var lines = arff.split('\n'),
                     attrLines = [],
                     dataLines = [],
@@ -38,6 +38,12 @@ function fileProcessor(settings){
                 else{
                     s.onSuccess.call(this, new WSData({fileName: fileName, attributes: attributes, rawData: rawData}));
                 }
+            })
+            .error(function(jqXHR, textStatus, errorThrown){
+                console.log("***** ERROR *****");
+                console.log(jqXHR);
+                console.log(textStatus);
+                console.log(errorThrown);
             });
     };
     
