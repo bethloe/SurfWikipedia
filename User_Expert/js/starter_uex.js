@@ -20,6 +20,8 @@
     /*********************************************************************************************************************************/
     //  CALLBACKS
     
+    //
+
     // Upload plugin
     var uploadOnSuccess = function(files,data,xhr) {
         console.log("---- success uploading");
