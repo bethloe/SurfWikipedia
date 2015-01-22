@@ -11,12 +11,7 @@
         currentFile = 0,
         newIdName;
 
-/*
-    console.log('port');
-    console.log(port);
-    console.log(typeof port);
-    console.log(scriptURLroot);
-  */
+
     /*********************************************************************************************************************************/
     //  CALLBACKS
     
